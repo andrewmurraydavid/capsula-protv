@@ -1,0 +1,6 @@
+main
+main.o
+logs/*
+time.txt
+timeFile.txt
+bin/*
