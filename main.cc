@@ -149,9 +149,6 @@ static string getApiText(int id)
             bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
             if (!parsingSuccessful)
             {
-                std::cout << "Failed to parse" << reader.getFormattedErrorMessages();
-                cout << readBuffer.c_str() << endl
-                     << endl;
                 return def_message;
             }
             if (root[0].get("mesaj", "") != "Start Capsula-Timpului NOW")
@@ -220,7 +217,6 @@ static void checkCountDownStatus()
             bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
             if (!parsingSuccessful)
             {
-                std::cout << "Failed to parse" << reader.getFormattedErrorMessages();
             }
             for (unsigned int no = 0; no < root.size(); no++)
             {
@@ -362,7 +358,6 @@ static void compareIdToDB()
             bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
             if (!parsingSuccessful)
             {
-                std::cout << "Failed to parse" << reader.getFormattedErrorMessages();
             }
             int id = atoi(root[0].get("id", -1).asString().c_str());
             if (id > -1)
@@ -415,7 +410,6 @@ static void getLastUsableID()
             bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
             if (!parsingSuccessful)
             {
-                std::cout << "Failed to parse" << reader.getFormattedErrorMessages();
             }
             else
             {
@@ -436,7 +430,7 @@ static void getLastUsableID()
 //aici e main-ul
 int main(int argc, char *argv[])
 {
-    cout << "Starting program" << endl;
+    cout << "Starting program " << endl;
     getLastUsableID();
     readTime();
 
@@ -452,8 +446,8 @@ int main(int argc, char *argv[])
     if (canvas == NULL)
         return 1;
 
-    canvas->SetPWMBits(1);
     canvas->SetBrightness(brightness);
+    canvas->SetPWMBits(1);
 
     int panel_size = 512;
     int x = panel_size;

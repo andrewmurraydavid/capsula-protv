@@ -5,3 +5,4 @@ time.txt
 timeFile.txt
 bin/*
 writeTime
+.vscode/*
