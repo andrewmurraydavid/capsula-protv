@@ -1,7 +1,7 @@
 CFLAGS=-Wall -O3 -g --verbose
 CXXFLAGS=$(CFLAGS)
-OBJECTS=main.o
-BINARIES=main
+OBJECTS=main.o writeTime.o
+BINARIES=main writeTime
 
 # Where our library resides. You mostly only need to change the
 # RGB_LIB_DISTRIBUTION, this is where the library is checked out.
@@ -15,7 +15,8 @@ LDFLAGS+=-L$(RGB_LIBDIR) -l$(RGB_LIBRARY_NAME) -lrt -lm -lpthread -lcurl -ljsonc
 
 all : $(BINARIES)
 
-main : main.o
+bin/main : main.o
+bin/writeTime : writeTime.o
 
 # All the binaries that have the same name as the object file.q
 % : %.o $(RGB_LIBRARY)

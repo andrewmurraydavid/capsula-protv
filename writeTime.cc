@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
         myfile << argv[1] << endl;
         myfile.flush();
         myfile.close();
-        cout << "Wrote to file: " << argv[1] << endl;
+        // cout << "Wrote to file: " << argv[1] << endl;
     }
     else
     {
