@@ -447,7 +447,6 @@ int main(int argc, char *argv[])
         return 1;
 
     canvas->SetBrightness(brightness);
-    canvas->SetPWMBits(1);
 
     int panel_size = 512;
     int x = panel_size;
