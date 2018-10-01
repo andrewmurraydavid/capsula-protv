@@ -25,8 +25,6 @@
 using namespace std;
 using namespace rgb_matrix;
 
-static int last_id = 126;
-
 Color color(255, 255, 255);
 Color color_line(255, 255, 255);
 Color color_clock(255, 255, 255);
@@ -64,10 +62,15 @@ rgb_matrix::Font font_clock;
 
 char remTime[16];
 
-static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+static int usage(const char *progname)
 {
-    ((std::string *)userp)->append((char *)contents, size * nmemb);
-    return size * nmemb;
+    fprintf(stderr, "usage: %s [options]\n", progname);
+    fprintf(stderr, "Reads text from stdin and displays it. "
+                    "Empty string: clear screen\n");
+    fprintf(stderr, "Options:\n");
+    rgb_matrix::PrintMatrixFlags(stderr);
+    fprintf(stderr, "\t-f <font-file>    : Use given font.\n");
+    return 1;
 }
 
 // convert int to string (e bine sa stii de el)
@@ -104,12 +107,6 @@ static void readTime()
     std::cout << "mins: " << mins << std::endl;
     sec = vect.at(4);
     std::cout << "sec: " << sec << std::endl;
-}
-
-//preia textul de la API ( http://gandeste-liber.ro/capsulatimpului/api.php?order=ASC&id=0 )
-static string getApiText(int id)
-{
-    return def_message;
 }
 
 //aici calculeaza timpul ramas in countdown timer
@@ -225,16 +222,16 @@ static int loadFonts()
 //aici e main-ul
 int main(int argc, char *argv[])
 {
-    RGBMatrix::Options matrix_options;
-    rgb_matrix::RuntimeOptions runtime_opt;
-
-    if (!rgb_matrix::ParseOptionsFromFlags(&argc, &argv, &matrix_options, &runtime_opt))
-    {
-        return 1;
-    }
-
     cout << "Starting program " << endl;
     readTime();
+
+    RGBMatrix::Options matrix_options;
+    rgb_matrix::RuntimeOptions runtime_opt;
+    if (!rgb_matrix::ParseOptionsFromFlags(&argc, &argv, &matrix_options, &runtime_opt))
+    {
+        return usage(argv[0]);
+    }
+
     loadFonts();
     RGBMatrix *canvas = rgb_matrix::CreateMatrixFromOptions(matrix_options, runtime_opt);
     if (canvas == NULL)
