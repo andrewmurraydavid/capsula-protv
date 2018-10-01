@@ -100,7 +100,8 @@ static string getRemainingTime()
     }
 
     cout << "====================================" << endl;
-    seconds_left = (4667752800 - result + 86400);
+    cout << "left: " << seconds_left << endl;
+    seconds_left = ((4667752800 - result) + 86400);
 
     mins = seconds_left / 60;
     sec = seconds_left % 60;
@@ -109,8 +110,8 @@ static string getRemainingTime()
     year = seconds_left / 31557600;
     day = std::fmod(seconds_left / 86400, 365.25);
 
-    cout << "now" << result << endl;
-    cout << "left" << seconds_left << endl;
+    cout << "now: " << result << endl;
+    cout << "left: " << seconds_left << endl;
     cout << "years left: " << year << endl;
     cout << "days left: " << day << endl;
     cout << "hours left: " << hour << endl;
