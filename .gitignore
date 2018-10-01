@@ -6,3 +6,4 @@ timeFile.txt
 bin/*
 writeTime
 .vscode/*
+node_modules/*

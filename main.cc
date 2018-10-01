@@ -195,46 +195,6 @@ static string getApiText(int id)
     }
 }
 
-//aici e triggerul pt countdown
-static void checkCountDownStatus()
-{
-    try
-    {
-        CURL *curl;
-        std::string readBuffer;
-        curl = curl_easy_init();
-        if (curl)
-        {
-            curl_easy_setopt(curl, CURLOPT_URL, "http://gandeste-liber.ro/capsulatimpului/api.php?order=ASC");
-            //curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.0.108/capsula/api.php?order=ASC");
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
-            curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-            Json::Value root;
-            Json::Reader reader;
-            bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
-            if (!parsingSuccessful)
-            {
-            }
-            for (unsigned int no = 0; no < root.size(); no++)
-            {
-                string result = root[no].get("mesaj", "").asString();
-                if (result == "Start Capsula-Timpului NOW")
-                {
-                    //if (result == "bbb") {
-                    //if (result == "Porneste!") {
-                    countdown = true;
-                }
-            }
-        }
-    }
-    catch (const std::exception &e)
-    {
-    }
-}
-
 //aici calculeaza timpul ramas in countdown timer
 static string getRemainingTime()
 {
@@ -333,45 +293,6 @@ static string getRemainingTime()
     return time_result;
 }
 
-//aici compara last_id cu ultimul id din baza de date
-static void compareIdToDB()
-{
-    try
-    {
-        CURL *curl;
-        std::string readBuffer;
-        curl = curl_easy_init();
-        if (curl)
-        {
-            curl_easy_setopt(curl, CURLOPT_URL,
-                             ("http://gandeste-liber.ro/capsulatimpului/api.php?order=ASC&id=" +
-                              itos(last_id))
-                                 .c_str());
-            //curl_easy_setopt(curl, CURLOPT_URL, ("http://192.168.0.108/capsula/api.php?order=ASC&id=" + itos(last_id)).c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
-            curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-            Json::Value root;
-            Json::Reader reader;
-            bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
-            if (!parsingSuccessful)
-            {
-            }
-            int id = atoi(root[0].get("id", -1).asString().c_str());
-            if (id > -1)
-            {
-                random_set = false;
-                cout << "Found new entry" << endl;
-            }
-        }
-    }
-    catch (const std::exception &e)
-    {
-    }
-}
-
 //aici isi face load la fonturi
 static int loadFonts()
 {
@@ -388,50 +309,10 @@ static int loadFonts()
     return 0;
 }
 
-static void getLastUsableID()
-{
-    try
-    {
-        CURL *curl;
-        std::string readBuffer;
-        curl = curl_easy_init();
-        if (curl)
-        {
-            curl_easy_setopt(curl, CURLOPT_URL,
-                             "http://gandeste-liber.ro/capsulatimpului/api.php?order=DESC&");
-            //curl_easy_setopt(curl, CURLOPT_URL, ("http://192.168.0.108/capsula/api.php?order=ASC&id=" + itos(last_id)).c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
-            curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-            Json::Value root;
-            Json::Reader reader;
-            bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
-            if (!parsingSuccessful)
-            {
-            }
-            else
-            {
-                int id = atoi(root[1].get("id", -1).asString().c_str());
-                if (id > -1)
-                {
-                    last_id = id;
-                    // cout << "Got the last usable id: " << last_id;
-                }
-            }
-        }
-    }
-    catch (const std::exception &e)
-    {
-    }
-}
-
 //aici e main-ul
 int main(int argc, char *argv[])
 {
     cout << "Starting program " << endl;
-    getLastUsableID();
     readTime();
 
     RGBMatrix::Options matrix_options;
@@ -493,13 +374,11 @@ int main(int argc, char *argv[])
             size_of_clock = remTimeString.size();
             strncpy(remTime, remTimeString.c_str(), sizeof(remTime));
             last_time_clock = clock();
-            if (!countdown)
-                checkCountDownStatus();
-            // cout << time_result << endl;
         }
         if (clock() - last_time_db > CLOCKS_PER_SEC && (random_set))
         { //delay intre comaparari la baza de date
-            compareIdToDB();
+            
+            // ToDo: check for config changes via last modified 
             last_time_db = clock();
         }
 
