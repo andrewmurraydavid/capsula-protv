@@ -277,7 +277,8 @@ int main(int argc, char *argv[])
             size_of_clock = remTimeString.size();
             strncpy(remTime, remTimeString.c_str(), sizeof(remTime));
             last_time_clock = clock();
-            system(("./writeTime " + time_result).c_str());
+            if (sec % 5 == 0)
+                system(("./writeTime " + time_result).c_str());
         }
 
         rgb_matrix::DrawText(canvas, font_text, x, 16 + font_text.baseline(),
