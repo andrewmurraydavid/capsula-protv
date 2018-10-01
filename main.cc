@@ -57,7 +57,7 @@ int sec = 0;
 
 long prev_time = time(nullptr);
 time_t result;
-long seconds_left = 4667752800;
+double seconds_left = 4667752800;
 
 double last_time_text = time(nullptr);
 double last_time_clock = time(nullptr);
@@ -98,25 +98,15 @@ static string getRemainingTime()
     { //cand nu face countdown, o sa afiseze "100:000:00:00:00"
         return "100:000:00:00:00";
     }
-
-    cout << "====================================" << endl;
-    cout << "left: " << seconds_left << endl;
+    
     seconds_left = ((4667752800 - result) + 86400);
 
-    mins = seconds_left / 60;
-    sec = seconds_left % 60;
-    hour = (seconds_left / 3600) % 24;
+    mins = (int)(seconds_left / 60);
+    sec = std::fmod(seconds_left, 60);
+    hour = (int)(seconds_left / 3600) % 24;
     mins = mins % 60;
-    year = seconds_left / 31557600;
+    year = (int)(seconds_left / 31557600);
     day = std::fmod(seconds_left / 86400, 365.25);
-
-    cout << "now: " << result << endl;
-    cout << "left: " << seconds_left << endl;
-    cout << "years left: " << year << endl;
-    cout << "days left: " << day << endl;
-    cout << "hours left: " << hour << endl;
-    cout << "minutes left: " << mins << endl;
-    cout << "seconds left: " << sec << endl;
 
     //formatare (pt estetica) a countdown-ului
     time_result = "";
