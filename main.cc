@@ -21,6 +21,12 @@
 #include <unistd.h>
 #include <cmath>
 
+#include <ctime>
+#include <iostream>
+#include <unistd.h>
+#include <cmath>
+#include <time.h>
+
 #define times 1 //numar de treceri
 
 using namespace std;
@@ -49,13 +55,12 @@ int hour = 0;
 int mins = 0;
 int sec = 0;
 
-double last_time_text = clock();
-double last_time_clock = clock();
-double last_time_timer = clock();
-
 long prev_time = time(nullptr);
 time_t result;
 long seconds_left = 4667752800;
+
+double last_time_text = time(nullptr);
+double last_time_clock = time(nullptr);
 
 bool countdown = true;
 bool random_set = false;
@@ -94,6 +99,7 @@ static string getRemainingTime()
         return "100:000:00:00:00";
     }
 
+    cout << "====================================" << endl;
     seconds_left = (4667752800 - result + 86400);
 
     mins = seconds_left / 60;
@@ -103,13 +109,13 @@ static string getRemainingTime()
     year = seconds_left / 31557600;
     day = std::fmod(seconds_left / 86400, 365.25);
 
+    cout << "now" << result << endl;
+    cout << "left" << seconds_left << endl;
     cout << "years left: " << year << endl;
     cout << "days left: " << day << endl;
     cout << "hours left: " << hour << endl;
     cout << "minutes left: " << mins << endl;
     cout << "seconds left: " << sec << endl;
-
-    prev_time = result;
 
     //formatare (pt estetica) a countdown-ului
     time_result = "";
@@ -214,9 +220,9 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        if (clock() - last_time_text > 50000)
+        if (time(nullptr) - last_time_text > 50000)
         { //delay intre schimbare de pixeli
-            last_time_text = clock();
+            last_time_text = time(nullptr);
             if (x > 0 - text_offset)
             {
                 x--;
@@ -242,8 +248,9 @@ int main(int argc, char *argv[])
             remTimeString = getRemainingTime();
             size_of_clock = remTimeString.size();
             strncpy(remTime, remTimeString.c_str(), sizeof(remTime));
-            last_time_clock = clock();
         }
+
+        prev_time = result;
 
         rgb_matrix::DrawText(canvas, font_text, x, 16 + font_text.baseline(),
                              color, &bg_color, line,
