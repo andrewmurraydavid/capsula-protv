@@ -259,6 +259,6 @@ int main(int argc, char *argv[])
         rgb_matrix::DrawText(canvas, font_clock, 510 - (size_of_clock * char_width_clock) - 6, 12,
                              color_clock, &bg_color, remTime,
                              letter_spacing);
-        usleep(50000);
+        usleep(30000);
     }
 }
