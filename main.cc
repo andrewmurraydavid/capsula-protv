@@ -103,6 +103,12 @@ static string getRemainingTime()
     year = seconds_left / 31557600;
     day = std::fmod(seconds_left / 86400, 365.25);
 
+    cout << "years left: " << year << endl;
+    cout << "days left: " << day << endl;
+    cout << "hours left: " << hour << endl;
+    cout << "minutes left: " << mins << endl;
+    cout << "seconds left: " << sec << endl;
+
     prev_time = result;
 
     //formatare (pt estetica) a countdown-ului
