@@ -225,10 +225,16 @@ static int loadFonts()
 //aici e main-ul
 int main(int argc, char *argv[])
 {
-    cout << "Starting program " << endl;
-    readTime();
     RGBMatrix::Options matrix_options;
     rgb_matrix::RuntimeOptions runtime_opt;
+
+    if (!rgb_matrix::ParseOptionsFromFlags(&argc, &argv, &matrix_options, &runtime_opt))
+    {
+        return 1;
+    }
+
+    cout << "Starting program " << endl;
+    readTime();
     loadFonts();
     RGBMatrix *canvas = rgb_matrix::CreateMatrixFromOptions(matrix_options, runtime_opt);
     if (canvas == NULL)
