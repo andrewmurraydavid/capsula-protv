@@ -98,7 +98,7 @@ static string getRemainingTime()
     { //cand nu face countdown, o sa afiseze "100:000:00:00:00"
         return "100:000:00:00:00";
     }
-    
+
     seconds_left = ((4667752800 - result) + 86400);
 
     mins = (int)(seconds_left / 60);
@@ -211,28 +211,23 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        if (time(nullptr) - last_time_text > 50000)
-        { //delay intre schimbare de pixeli
-            last_time_text = time(nullptr);
-            if (x > 0 - text_offset)
-            {
-                x--;
-            }
-            else
-            {
-                times_left--;
-                x = panel_size;
-                if (times_left <= 0)
-                {
-                    strncpy(line, def_message.c_str(), sizeof(line));
-                    line[sizeof(line) - 1] = 0;
-                    text_offset = (1024 - std::count(line, line + 1024, 0)) * char_width_text;
-                    times_left = times; //numar de treceri
-                }
-            }
-        }
 
         result = time(nullptr);
+
+        if (x > 0 - text_offset)
+            x--;
+        else
+        {
+            times_left--;
+            x = panel_size;
+            if (times_left <= 0)
+            {
+                strncpy(line, def_message.c_str(), sizeof(line));
+                line[sizeof(line) - 1] = 0;
+                text_offset = (1024 - std::count(line, line + 1024, 0)) * char_width_text;
+                times_left = times; //numar de treceri
+            }
+        }
 
         if (result != prev_time)
         {
@@ -264,6 +259,6 @@ int main(int argc, char *argv[])
         rgb_matrix::DrawText(canvas, font_clock, 510 - (size_of_clock * char_width_clock) - 6, 12,
                              color_clock, &bg_color, remTime,
                              letter_spacing);
-        usleep(10000);
+        usleep(50000);
     }
 }
