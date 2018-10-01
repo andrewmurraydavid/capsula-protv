@@ -19,6 +19,7 @@
 #include <sstream>
 #include <fstream>
 #include <unistd.h>
+#include <cmath>
 
 #define times 1 //numar de treceri
 
@@ -52,6 +53,10 @@ double last_time_text = clock();
 double last_time_clock = clock();
 double last_time_timer = clock();
 
+long prev_time = time(nullptr);
+time_t result;
+long seconds_left = 4667752800;
+
 bool countdown = true;
 bool random_set = false;
 
@@ -81,34 +86,6 @@ static string itos(int i)
     return s.str();
 }
 
-//cauta sa vada daca exista deja un timp de la care sa ii dea reset
-static void readTime()
-{
-    std::ifstream nameFileout;
-    nameFileout.open("/home/pi/ct/timeFile.txt");
-    std::string str;
-    std::getline(nameFileout, str);
-    std::vector<int> vect;
-    std::stringstream ss(str);
-    int i;
-    while (ss >> i)
-    {
-        vect.push_back(i);
-        if (ss.peek() == ':')
-            ss.ignore();
-    }
-    year = vect.at(0);
-    std::cout << "years: " << year << std::endl;
-    day = vect.at(1);
-    std::cout << "days: " << day << std::endl;
-    hour = vect.at(2);
-    std::cout << "hours: " << hour << std::endl;
-    mins = vect.at(3);
-    std::cout << "mins: " << mins << std::endl;
-    sec = vect.at(4);
-    std::cout << "sec: " << sec << std::endl;
-}
-
 //aici calculeaza timpul ramas in countdown timer
 static string getRemainingTime()
 {
@@ -117,35 +94,16 @@ static string getRemainingTime()
         return "100:000:00:00:00";
     }
 
-    //basic computation pentru countdown
-    sec--;
-    if (sec < 0)
-    {
-        sec = 59;
-        mins--;
-    }
-    if (mins < 0)
-    {
-        mins = 59;
-        hour--;
-    }
-    if (hour < 0)
-    {
-        hour = 23;
-        day--;
-    }
-    if (day < 0)
-    {
-        if (year % 4 == 0)
-            day = 365;
-        else
-            day = 364;
-        year--;
-    }
-    if (year < 0)
-    {
-        countdown = false;
-    }
+    seconds_left = (4667752800 - result + 86400);
+
+    mins = seconds_left / 60;
+    sec = seconds_left % 60;
+    hour = (seconds_left / 3600) % 24;
+    mins = mins % 60;
+    year = seconds_left / 31557600;
+    day = std::fmod(seconds_left / 86400, 365.25);
+
+    prev_time = result;
 
     //formatare (pt estetica) a countdown-ului
     time_result = "";
@@ -223,7 +181,6 @@ static int loadFonts()
 int main(int argc, char *argv[])
 {
     cout << "Starting program " << endl;
-    readTime();
 
     RGBMatrix::Options matrix_options;
     rgb_matrix::RuntimeOptions runtime_opt;
@@ -271,14 +228,15 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        if (clock() - last_time_clock > 1301236)
-        { //delay intre "secunde"
+
+        result = time(nullptr);
+
+        if (result != prev_time)
+        {
             remTimeString = getRemainingTime();
             size_of_clock = remTimeString.size();
             strncpy(remTime, remTimeString.c_str(), sizeof(remTime));
             last_time_clock = clock();
-            if (sec % 5 == 0)
-                system(("./writeTime " + time_result).c_str());
         }
 
         rgb_matrix::DrawText(canvas, font_text, x, 16 + font_text.baseline(),
