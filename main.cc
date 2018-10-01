@@ -25,17 +25,6 @@
 using namespace std;
 using namespace rgb_matrix;
 
-static int usage(const char *progname)
-{
-    fprintf(stderr, "usage: %s [options]\n", progname);
-    fprintf(stderr, "Reads text from stdin and displays it. "
-                    "Empty string: clear screen\n");
-    fprintf(stderr, "Options:\n");
-    rgb_matrix::PrintMatrixFlags(stderr);
-    fprintf(stderr, "\t-f <font-file>    : Use given font.\n");
-    return 1;
-}
-
 static int last_id = 126;
 
 Color color(255, 255, 255);
@@ -50,7 +39,7 @@ const int char_width_clock = 7;
 const int char_height_clock = 13;
 const string def_message = "100 Pentru Viitor / RomânEști oriunde ai fi!";
 
-int brightness = 10;
+int brightness = 100;
 int letter_spacing = 0;
 int size_of_clock;
 
@@ -63,15 +52,10 @@ int sec = 0;
 
 double last_time_text = clock();
 double last_time_clock = clock();
-double last_time_db = clock();
 double last_time_timer = clock();
-double last_time_autosave = clock();
-string last_result = "";
 
 bool countdown = true;
 bool random_set = false;
-
-ofstream timeFile;
 
 int times_left = times; //numarul de treceri
 
@@ -125,74 +109,7 @@ static void readTime()
 //preia textul de la API ( http://gandeste-liber.ro/capsulatimpului/api.php?order=ASC&id=0 )
 static string getApiText(int id)
 {
-    if (random_set)
-    {
-        id = 0;
-    }
-    try
-    {
-        CURL *curl;
-        std::string readBuffer;
-        curl = curl_easy_init();
-        if (curl)
-        {
-            curl_easy_setopt(curl, CURLOPT_URL,
-                             ("http://gandeste-liber.ro/capsulatimpului/api.php?order=ASC&id=" + itos(id)).c_str());
-            //curl_easy_setopt(curl, CURLOPT_URL, ("http://192.168.0.108/capsula/api.php?order=ASC&id=" + itos(id)).c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
-            curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-            Json::Value root;
-            Json::Reader reader;
-            bool parsingSuccessful = reader.parse(readBuffer.c_str(), root); //parse process
-            if (!parsingSuccessful)
-            {
-                return def_message;
-            }
-            if (root[0].get("mesaj", "") != "Start Capsula-Timpului NOW")
-            {
-                if (random_set)
-                {
-                    int no = 0 + (rand() % static_cast<int>(root.size() + 1));
-                    // cout << "random no is " << no << endl;
-                    // cout << "random id is " << root[no].get("id", "").asString() << " and last_id is " << last_id << endl << endl;
-                    return root[no].get("mesaj", "").asString();
-                }
-                else if (!random_set)
-                {
-                    last_id = atoi(root[0].get("id", last_id).asString().c_str());
-                    // cout << "last_id is " << last_id << endl;
-                    string result = root[0].get("mesaj", "").asString();
-                    last_result = result;
-                    if (result == "")
-                    {
-                        random_set = true;
-                        return "";
-                    }
-                    else
-                    {
-                        random_set = false;
-                        return result;
-                    }
-                }
-            }
-            else
-            {
-                return def_message;
-            }
-            last_id = atoi(root[0].get("id", last_id).asString().c_str());
-        }
-        return def_message;
-    }
-    catch (const std::exception &e)
-    {
-        if (last_result != "")
-            return last_result;
-        else
-            return def_message;
-    }
+    return def_message;
 }
 
 //aici calculeaza timpul ramas in countdown timer
@@ -204,92 +121,88 @@ static string getRemainingTime()
     }
 
     //basic computation pentru countdown
-    if (clock() - last_time_timer > 1301236)
+    sec--;
+    if (sec < 0)
     {
-        sec--;
-        if (sec < 0)
-        {
-            sec = 59;
-            mins--;
-        }
-        if (mins < 0)
-        {
-            mins = 59;
-            hour--;
-        }
-        if (hour < 0)
-        {
-            hour = 23;
-            day--;
-        }
-        if (day < 0)
-        {
-            if (year % 4 == 0)
-                day = 365;
-            else
-                day = 364;
-            year--;
-        }
-        if (year < 0)
-        {
-            countdown = false;
-        }
-
-        last_time_timer = clock();
-
-        //formatare (pt estetica) a countdown-ului
-        time_result = "";
-        if (year < 100 && year > 10)
-        {
-            time_result = time_result + "0" + itos(year);
-        }
-        else if (year < 10)
-        {
-            time_result = time_result + "00" + itos(year);
-        }
-        else
-            time_result = time_result + itos(year);
-
-        time_result = time_result + ":";
-
-        if (day < 100 && day > 10)
-        {
-            time_result = time_result + "0" + itos(day);
-        }
-        else if (day < 10)
-        {
-            time_result = time_result + "00" + itos(day);
-        }
-        else
-            time_result = time_result + itos(day);
-
-        time_result = time_result + ":";
-
-        if (hour < 10)
-        {
-            time_result = time_result + "0" + itos(hour);
-        }
-        else
-            time_result = time_result + itos(hour);
-
-        time_result = time_result + ":";
-
-        if (mins < 10)
-        {
-            time_result = time_result + "0" + itos(mins);
-        }
-        else
-            time_result = time_result + itos(mins);
-
-        time_result = time_result + ":";
-
-        if (sec < 10)
-        {
-            time_result = time_result + "0" + itos(sec);
-        }
-        else
-            time_result = time_result + itos(sec);
+        sec = 59;
+        mins--;
     }
+    if (mins < 0)
+    {
+        mins = 59;
+        hour--;
+    }
+    if (hour < 0)
+    {
+        hour = 23;
+        day--;
+    }
+    if (day < 0)
+    {
+        if (year % 4 == 0)
+            day = 365;
+        else
+            day = 364;
+        year--;
+    }
+    if (year < 0)
+    {
+        countdown = false;
+    }
+
+    //formatare (pt estetica) a countdown-ului
+    time_result = "";
+    if (year < 100 && year > 10)
+    {
+        time_result = time_result + "0" + itos(year);
+    }
+    else if (year < 10)
+    {
+        time_result = time_result + "00" + itos(year);
+    }
+    else
+        time_result = time_result + itos(year);
+
+    time_result = time_result + ":";
+
+    if (day < 100 && day > 10)
+    {
+        time_result = time_result + "0" + itos(day);
+    }
+    else if (day < 10)
+    {
+        time_result = time_result + "00" + itos(day);
+    }
+    else
+        time_result = time_result + itos(day);
+
+    time_result = time_result + ":";
+
+    if (hour < 10)
+    {
+        time_result = time_result + "0" + itos(hour);
+    }
+    else
+        time_result = time_result + itos(hour);
+
+    time_result = time_result + ":";
+
+    if (mins < 10)
+    {
+        time_result = time_result + "0" + itos(mins);
+    }
+    else
+        time_result = time_result + itos(mins);
+
+    time_result = time_result + ":";
+
+    if (sec < 10)
+    {
+        time_result = time_result + "0" + itos(sec);
+    }
+    else
+        time_result = time_result + itos(sec);
+
     return time_result;
 }
 
@@ -314,14 +227,8 @@ int main(int argc, char *argv[])
 {
     cout << "Starting program " << endl;
     readTime();
-
     RGBMatrix::Options matrix_options;
     rgb_matrix::RuntimeOptions runtime_opt;
-    if (!rgb_matrix::ParseOptionsFromFlags(&argc, &argv, &matrix_options, &runtime_opt))
-    {
-        return usage(argv[0]);
-    }
-
     loadFonts();
     RGBMatrix *canvas = rgb_matrix::CreateMatrixFromOptions(matrix_options, runtime_opt);
     if (canvas == NULL)
@@ -333,20 +240,14 @@ int main(int argc, char *argv[])
     int x = panel_size;
     string remTimeString;
 
-    string temp = getApiText(last_id);
     char line[1024];
-    strncpy(line, temp.c_str(), sizeof(line));
+    strncpy(line, def_message.c_str(), sizeof(line));
     line[sizeof(line) - 1] = 0;
 
     int text_offset = (1024 - std::count(line, line + 1024, 0)) * char_width_text;
 
     while (true)
     {
-        if (clock() - last_time_autosave > CLOCKS_PER_SEC * 5)
-        {
-            system(("./writeTime " + time_result).c_str());
-            last_time_autosave = clock();
-        }
         if (clock() - last_time_text > 50000)
         { //delay intre schimbare de pixeli
             last_time_text = clock();
@@ -360,8 +261,7 @@ int main(int argc, char *argv[])
                 x = panel_size;
                 if (times_left <= 0)
                 {
-                    temp = getApiText(last_id);
-                    strncpy(line, temp.c_str(), sizeof(line));
+                    strncpy(line, def_message.c_str(), sizeof(line));
                     line[sizeof(line) - 1] = 0;
                     text_offset = (1024 - std::count(line, line + 1024, 0)) * char_width_text;
                     times_left = times; //numar de treceri
@@ -374,12 +274,7 @@ int main(int argc, char *argv[])
             size_of_clock = remTimeString.size();
             strncpy(remTime, remTimeString.c_str(), sizeof(remTime));
             last_time_clock = clock();
-        }
-        if (clock() - last_time_db > CLOCKS_PER_SEC && (random_set))
-        { //delay intre comaparari la baza de date
-            
-            // ToDo: check for config changes via last modified 
-            last_time_db = clock();
+            system(("./writeTime " + time_result).c_str());
         }
 
         rgb_matrix::DrawText(canvas, font_text, x, 16 + font_text.baseline(),
@@ -403,6 +298,6 @@ int main(int argc, char *argv[])
         rgb_matrix::DrawText(canvas, font_clock, 510 - (size_of_clock * char_width_clock) - 6, 12,
                              color_clock, &bg_color, remTime,
                              letter_spacing);
-        usleep(100);
+        usleep(10000);
     }
 }
